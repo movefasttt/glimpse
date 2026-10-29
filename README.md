@@ -2,7 +2,7 @@
 
 # Glimpse
 
-**Format & render terminal text, anywhere.**
+**Format & render text from anywhere.**
 
 Turn broken AI output into paste-ready Markdown. From broken lines and tables to Mermaid diagrams.
 

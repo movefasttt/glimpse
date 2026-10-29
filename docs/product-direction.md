@@ -6,7 +6,7 @@ The app-readiness items live in [app-readiness.md](./app-readiness.md).
 
 ### 1h. Framing shift: from "render" to "format" (the maintainer, 2026-10-24) - settled 2026-10-27
 
-**Name and slogan locked (the maintainer, 2026-10-27)**: name **Glimpse** ("it doesn't matter. no one is going to complain"; the collision with the Show HN markdown reader is accepted). Line 1: **"Glimpse: Format & render terminal text, anywhere."** Line 2: **"From broken lines to tables to Mermaid diagrams."** This is the one source for the slogan, one-liner, README hero, promo, first-run card and Show HN title. "Format" is the text you take away, "render" is what you see - both lanes in two words.
+**Name and slogan locked (the maintainer, 2026-10-27)**: name **Glimpse** ("it doesn't matter. no one is going to complain"; the collision with the Show HN markdown reader is accepted). Line 1: **"Glimpse: Format & render text from anywhere."** Line 2: **"From broken lines to tables to Mermaid diagrams."** This is the one source for the slogan, one-liner, README hero, promo, first-run card and Show HN title. "Format" is the text you take away, "render" is what you see - both lanes in two words.
 
 the maintainer's observation, 2026-10-24: the only *rendering* problem a TUI has is mermaid and occasional breaks. The bigger use case is **formatting** - Glimpse already formats to render correctly, and the copy button already ships that formatting out, but the feature is under-served. His own usage: copying a message from Claude Code into another app, which he found himself doing a lot. The framing in the slogan ("Drag & Render - Anything, Anywhere") describes the reader, not the thing he actually reaches for.
 
@@ -110,7 +110,7 @@ One consequence worth knowing for the auto-push: copying a reply that *contains*
 
 | Surface | File | Current wording |
 |---|---|---|
-| Slogan | `docs/launch.md` (one source) | "Glimpse: Format & render terminal text, anywhere." / "From broken lines to tables to Mermaid diagrams." |
+| Slogan | `docs/launch.md` (one source) | "Glimpse: Format & render text from anywhere." / "From broken lines to tables to Mermaid diagrams." |
 | One-liner (GitHub About) | `docs/app-readiness.md` 1b | "Select text anywhere on your Mac and read it as a clean document - rejoined lines, real tables, code, diagrams." |
 | Launch thesis (wedge, moat) | `docs/launch.md` "Thesis for launch" | "developers who read AI coding CLI output ... unreadable there" / "The moat is repairing terminal damage" |
 | Menu item (user-facing) | `main.swift` `buildStatusItem` | "Render Clipboard  ⌃⌥M" |

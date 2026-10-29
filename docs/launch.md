@@ -5,7 +5,7 @@ Living plan for taking Glimpse public. Product decisions still go in `docs/desig
 
 ## Thesis for launch
 
-- **Name and slogan locked (the maintainer, 2026-10-27)**: name **Glimpse** ("it doesn't matter. no one is going to complain"; the collision with the Show HN markdown reader is accepted). Line 1: **"Glimpse: Format & render terminal text, anywhere."** Line 2: **"From broken lines to tables to Mermaid diagrams."** This is the one source for the slogan, one-liner, README hero, promo and Show HN title. **Not the in-app card** (the maintainer, 2026-10-28: the user is already installed; pitch belongs before the install).
+- **Name and slogan locked (the maintainer, 2026-10-27)**: name **Glimpse** ("it doesn't matter. no one is going to complain"; the collision with the Show HN markdown reader is accepted). Line 1: **"Glimpse: Format & render text from anywhere."** Line 2: **"From broken lines to tables to Mermaid diagrams."** This is the one source for the slogan, one-liner, README hero, promo and Show HN title. **Not the in-app card** (the maintainer, 2026-10-28: the user is already installed; pitch belongs before the install).
 
 - **Wedge**: developers who read AI coding CLI output (Claude Code, Codex, Gemini CLI) in a terminal. One shared, vocal pain: long answers, tables, code and diagrams are unreadable there.
 - **Not a markdown viewer.** That shelf is full and every entry opens files (MacMD Viewer, MDViewer, Open Markdown, MarkViewer). Glimpse needs no file: select anywhere, summon, read. The moat is repairing terminal damage (hard wraps, box tables, stripped fences, mermaid), with measured evidence.
@@ -58,7 +58,7 @@ Checks on a new machine: `cd research/mermaid && npm install && npx playwright i
 | Decision | Options | Lean |
 |---|---|---|
 | Name | - | **Decided**: Glimpse (the maintainer, 2026-10-20) |
-| Slogan | - | **Locked (the maintainer, 2026-10-27)**: "Glimpse: Format & render terminal text, anywhere." / "From broken lines to tables to Mermaid diagrams." Supersedes "Drag & Render — Anything, Anywhere." (2026-10-20) |
+| Slogan | - | **Locked (the maintainer, 2026-10-27)**: "Glimpse: Format & render text from anywhere." / "From broken lines to tables to Mermaid diagrams." Supersedes "Drag & Render — Anything, Anywhere." (2026-10-20) |
 | Icon | - | **Decided**: L1 "render lens" (messy fragments enter a loupe, clean lines inside), `research/launch/round2/` |
 | Settings surface | - | **Decided** (the maintainer, 2026-10-21): one card for first run + settings (Settings… ⌘, and reopening Glimpse open it), plus menu toggles. **Direction B "Try it first" and no promotion in the card** (the maintainer, 2026-10-28) |
 | Support platform | - | **Decided**: GitHub Sponsors (0% fee on sponsorships from personal accounts, up to 6% from organizations). Tiers: 99¢ default, $3, $5, $10, custom - Sponsors tiers may be whole dollars only (unverified): then $1 default |
