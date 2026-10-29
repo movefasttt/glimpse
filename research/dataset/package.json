@@ -1,0 +1,19 @@
+{
+  "name": "dataset",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dataset": "node build.mjs && node gold.mjs && node validate.mjs 12"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "acorn": "^8.19.0",
+    "acorn-walk": "^8.3.5",
+    "jsdom": "^29.1.1",
+    "marked": "^15.0.12",
+    "mermaid": "^12.1.0"
+  }
+}

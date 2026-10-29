@@ -1,0 +1,17 @@
+build/
+corpus/
+# research: keep tooling, never the private data (session text, renders, captures)
+research/*
+!research/dataset/
+research/dataset/*
+!research/dataset/*.mjs
+!research/dataset/*.py
+!research/dataset/lib/
+!research/dataset/package.json
+!research/dataset/package-lock.json
+!research/dataset/fixtures.jsonl
+!research/dataset/regressions.jsonl
+!research/harness/
+!research/other/
+format-v2.js
+!research/baseline/
