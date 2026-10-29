@@ -411,7 +411,7 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
         web.evaluateJavaScript("glimpseCopyPayload()") { result, _ in
             // An empty read (page not rendered yet) must never replace what the user copied.
             guard let p = result as? [String: String], let text = p["text"], !text.isEmpty else { return }
-            // Plain text only (Darwin, 2026-10-28): no HTML flavor, so every app receives the same minimal markdown.
+            // Plain text only (the maintainer, 2026-10-28): no HTML flavor, so every app receives the same minimal markdown.
             self.writePasteboard(self.copyButton, restore: "doc.on.doc") { $0.setString(text, forType: .string) }
         }
     }
@@ -530,7 +530,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: ⌘C on nothing
     //
     // Opt-in (needs Input Monitoring). Tied to ⌘C itself: "nothing is selected" is read as "the app copied nothing",
-    // so it cannot move to another key. A global shortcut was cut for 1.0 (Darwin, 2026-10-28): without reading the
+    // so it cannot move to another key. A global shortcut was cut for 1.0 (the maintainer, 2026-10-28): without reading the
     // selection (Accessibility) it can only render the clipboard, which is the same as ⌘C ⌘C with an extra step.
 
     static let emptyCopyKey = "emptyCopyShowsClipboard"

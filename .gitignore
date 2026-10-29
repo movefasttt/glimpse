@@ -15,3 +15,6 @@ research/dataset/*
 !research/other/
 format-v2.js
 !research/baseline/
+
+# local signing identity (never commit)
+.signing-identity

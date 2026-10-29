@@ -1,5 +1,5 @@
 // The welcome/settings card's SwiftUI (docs/app-readiness.md 1c). Pure view + model: no app dependency, so
-// research/harness/card-snapshot.swift renders it headlessly. Minimal by rule (Darwin, 2026-10-28): every element
+// research/harness/card-snapshot.swift renders it headlessly. Minimal by rule (the maintainer, 2026-10-28): every element
 // earns its place, text is cut by default, no slogan or pitch.
 
 import SwiftUI
@@ -21,7 +21,7 @@ final class CardModel: ObservableObject {
     var close: () -> Void = {}
 }
 
-/// A key as a keycap: soft rounded chip, regular system font (Darwin picked this over a hairline border and plain text, 2026-10-28).
+/// A key as a keycap: soft rounded chip, regular system font (the maintainer picked this over a hairline border and plain text, 2026-10-28).
 struct KeyCap: View {
     let key: String
     init(_ key: String) { self.key = key }
@@ -129,7 +129,7 @@ struct CardView: View {
                 }
             }
             HStack(spacing: 12) {
-                // Monochrome, like the rest of the card: only Done carries weight (Darwin, 2026-10-28: blue/red links read old).
+                // Monochrome, like the rest of the card: only Done carries weight (the maintainer, 2026-10-28: blue/red links read old).
                 HStack(spacing: 6) {
                     Button("GitHub") { model.openURL(Self.repoURL) }.buttonStyle(.plain)
                     Text("·")

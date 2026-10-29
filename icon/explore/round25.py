@@ -1,5 +1,5 @@
 # round 25: round 24 set the lens bars to plain white (regression, my mistake). Restore the tint: original blue tint (#d9f3ff/#a9dcff/#8ec9ff)
-# vs a tint mixed from the tile's own top color. Journal leads (Darwin: "sleek"); Mail, Keynote, Freeform for comparison. No lens fill (Darwin).
+# vs a tint mixed from the tile's own top color. Journal leads (the maintainer: "sleek"); Mail, Keynote, Freeform for comparison. No lens fill (the maintainer).
 import os, sys
 src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "round24.py")).read().split("\nnames = list(S)")[0]
 exec(src)

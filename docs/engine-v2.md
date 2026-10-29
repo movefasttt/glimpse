@@ -1,6 +1,6 @@
 # Format engine v2 - design
 
-Status: **ratified**, revision 3 (Darwin, 2026-10-13); **live since 2026-10-13** (see "Swap" at the end). Revision 2 folded in a cold design review; revision 3 folds in the design session with Darwin (both summarized at the end). Replaces the ordered rule cascade in `format.js` (v1). Principles: design record, "Direction after the first build".
+Status: **ratified**, revision 3 (the maintainer, 2026-10-13); **live since 2026-10-13** (see "Swap" at the end). Revision 2 folded in a cold design review; revision 3 folds in the design session with the maintainer (both summarized at the end). Replaces the ordered rule cascade in `format.js` (v1). Principles: design record, "Direction after the first build".
 
 ## Why v1 has to change
 
@@ -91,7 +91,7 @@ Both are validators in the same sense as `mermaid.parse`: they replace the per-c
 
 This matches the decision already recorded ("close calls keep line breaks") and the metric (structure → prose is damage; the reverse is not).
 
-**Terminal UI is demoted, never deleted: dimmed lines left in place** (Darwin, 2026-10-13). No chip, no click, no label to read; the reply simply reads louder than the tool output around it. Because a wrong demotion only dims text that stays readable, it is a cheap mistake and needs modest evidence, not high. Demoted lines are dimmed in the panel only; every copy keeps them as plain text, as they arrived (Darwin, 2026-10-28, reversing the earlier "left out of every copy action"). Collapsing long runs waits for a friction-log entry: real copies hold almost no terminal UI (1 line in Darwin's 39 copies; all 781 samples with terminal UI come from the two deliberately constructed spill kinds).
+**Terminal UI is demoted, never deleted: dimmed lines left in place** (the maintainer, 2026-10-13). No chip, no click, no label to read; the reply simply reads louder than the tool output around it. Because a wrong demotion only dims text that stays readable, it is a cheap mistake and needs modest evidence, not high. Demoted lines are dimmed in the panel only; every copy keeps them as plain text, as they arrived (the maintainer, 2026-10-28, reversing the earlier "left out of every copy action"). Collapsing long runs waits for a friction-log entry: real copies hold almost no terminal UI (1 line in the maintainer's 39 copies; all 781 samples with terminal UI come from the two deliberately constructed spill kinds).
 
 **Inline markup** (`**`, backticks, `<`, links) is decided per atom by the same risk rule: a literal backtick shown is cheap, eating `Vec<String>` or a line break is expensive, so markup is interpreted only when the evidence for markdown (a fence, a `#` heading or pipe table elsewhere in the text, several distinct inline signals) outweighs that asymmetry; otherwise it is escaped and shown literally.
 
@@ -128,7 +128,7 @@ v2 replaces v1 in the panel only when **all** of these hold. They are two-sided 
 | Adversarial checks (incl. the short-selection joins from the cold review) | All pass |
 | Raw markdown | No reply shows fewer of any word than v1, and none loses the block structure v1 kept (2026-10-13; token identity is reported, not gated: the parser eating `<name>` is identical tokens and lost text) |
 | Panel | 0 errors on the headless panel run |
-| Latency | p99 under 50 ms on samples; pathological inputs under 500 ms (Darwin, 2026-10-13; was 100 ms) |
+| Latency | p99 under 50 ms on samples; pathological inputs under 500 ms (the maintainer, 2026-10-13; was 100 ms) |
 | Rule budget | Named weights and thresholds in `policy.js` fewer than v1's, counted the same way (v1 counted in step 1; its raw numeric literals, ~270, are not the measure) |
 
 The scorer gains a `verbatim` type, a `demoted` flag (demoted reply text counts as a type error, not deletion), and two damage rules: any lost word, and a truth `code`/`diagram` line predicted `table` (`dataset.md` updated with them).
@@ -164,19 +164,19 @@ A classifier judge (local only; a hosted classifier would send clipboard text of
 
 Calibration belongs to one owner so readings can't race each other for contested samples.
 
-## Open decisions (Darwin)
+## Open decisions (the maintainer)
 
 | Decision | Options | Status |
 |---|---|---|
-| Ratify this design | as written / with changes | **Ratified as revision 3** (Darwin, 2026-10-13) |
-| Swap v2 into the live panel | after a gallery review / automatically on PASS | **Decided: automatically** when every gate passes and the cold reviewer signs off; v1 stays one `git revert` away (Darwin, 2026-10-13). **Swapped 2026-10-13** after round 7, Darwin waiving an eighth review ("let's swap finalize") |
-| How demoted terminal UI looks | collapsed chip / dimmed lines left in place | **Decided: dimmed lines in place** (Darwin, 2026-10-13) |
-| Covering new failures | finer rules per case / general invariants | **Decided: generality over granularity** (Darwin, 2026-10-13: "a wise move is not more granularity, but generality and simplicity that can cover many cases") |
-| How the raw-markdown gate reads | token identity / no lost words or structure vs v1 | **Decided: no lost words or block structure vs v1**, plus the general fix for the two tables it exposed (Darwin, 2026-10-13) |
-| Held-out gate | gap to the tuned split / paired v2-minus-v1 by session | **Decided: paired, session bootstrap, lower bound ≥ -1** (Darwin, 2026-10-13) |
-| Glued PR tables with no fixed period | hold the swap / ship and fix next | **Decided: ship; next engine task** (Darwin, 2026-10-13: "we don't aim for perfection. but we for sure will avoid stitch-and-fixing"). **Fixed the same day** by one general rule ("Glued rows" below) |
-| Script in three v2-only markdown triggers | sanitize / align v2's evidence with v1's | **Decided: align**, no sanitizer (Darwin, 2026-10-13; sanitization ruled out 2026-10-12) |
-| Pathological-input latency limit | 100 ms / looser | **Decided: 500 ms** (Darwin, 2026-10-13); p99 on samples stays under 50 ms |
+| Ratify this design | as written / with changes | **Ratified as revision 3** (the maintainer, 2026-10-13) |
+| Swap v2 into the live panel | after a gallery review / automatically on PASS | **Decided: automatically** when every gate passes and the cold reviewer signs off; v1 stays one `git revert` away (the maintainer, 2026-10-13). **Swapped 2026-10-13** after round 7, the maintainer waiving an eighth review ("let's swap finalize") |
+| How demoted terminal UI looks | collapsed chip / dimmed lines left in place | **Decided: dimmed lines in place** (the maintainer, 2026-10-13) |
+| Covering new failures | finer rules per case / general invariants | **Decided: generality over granularity** (the maintainer, 2026-10-13: "a wise move is not more granularity, but generality and simplicity that can cover many cases") |
+| How the raw-markdown gate reads | token identity / no lost words or structure vs v1 | **Decided: no lost words or block structure vs v1**, plus the general fix for the two tables it exposed (the maintainer, 2026-10-13) |
+| Held-out gate | gap to the tuned split / paired v2-minus-v1 by session | **Decided: paired, session bootstrap, lower bound ≥ -1** (the maintainer, 2026-10-13) |
+| Glued PR tables with no fixed period | hold the swap / ship and fix next | **Decided: ship; next engine task** (the maintainer, 2026-10-13: "we don't aim for perfection. but we for sure will avoid stitch-and-fixing"). **Fixed the same day** by one general rule ("Glued rows" below) |
+| Script in three v2-only markdown triggers | sanitize / align v2's evidence with v1's | **Decided: align**, no sanitizer (the maintainer, 2026-10-13; sanitization ruled out 2026-10-12) |
+| Pathological-input latency limit | 100 ms / looser | **Decided: 500 ms** (the maintainer, 2026-10-13); p99 on samples stays under 50 ms |
 
 ## Review summary (revision 1 → 2)
 
@@ -207,7 +207,7 @@ Calibration belongs to one owner so readings can't race each other for contested
 
 ## Build (2026-10-13)
 
-Built beside v1 in one session: engine by the integrator; gate tooling (`research/dataset/gates.mjs`, `split.mjs`, `rawmd-gate.mjs`, `rule-budget.mjs`), the regression set (`research/other/regress/`, 21 cases incl. Darwin's three broken copies) plus a v1-vs-v2 gallery (`research/gallery/build.mjs`), and the panel styles for verbatim and demoted lines, by three parallel agents.
+Built beside v1 in one session: engine by the integrator; gate tooling (`research/dataset/gates.mjs`, `split.mjs`, `rawmd-gate.mjs`, `rule-budget.mjs`), the regression set (`research/other/regress/`, 21 cases incl. the maintainer's three broken copies) plus a v1-vs-v2 gallery (`research/gallery/build.mjs`), and the panel styles for verbatim and demoted lines, by three parallel agents.
 
 **Decisions made while building** (each forced by a measured failure, each general):
 
@@ -280,7 +280,7 @@ Built beside v1 in one session: engine by the integrator; gate tooling (`researc
 | Latency p99; worst pathological | 6.5 ms; 206 ms | 7.6 ms; 90.5 ms | PASS (pathological near its limit: the extra render) |
 | Named tunables | 51 | 50 | PASS |
 
-**The raw-markdown gate measures identity, not readability.** Every one of v2's eight v2-only differences shows the same or more words than v1; v1 shows nothing v2 hides. Six are placeholders like `<url>`, `<name>`, `<ts>` that marked eats as HTML (v2 keeps the block's text, so its tokens differ); one is `~121s ... (~77s` that v1's render strikes through; one is a local image link shown as text. Proposed: restate the gate as "no reply loses shown words or block structure versus v1" (Darwin's call).
+**The raw-markdown gate measures identity, not readability.** Every one of v2's eight v2-only differences shows the same or more words than v1; v1 shows nothing v2 hides. Six are placeholders like `<url>`, `<name>`, `<ts>` that marked eats as HTML (v2 keeps the block's text, so its tokens differ); one is `~121s ... (~77s` that v1's render strikes through; one is a local image link shown as text. Proposed: restate the gate as "no reply loses shown words or block structure versus v1" (the maintainer's call).
 
 **Cold review round 4: FAIL (one blocking).** Three narrow places where v2 parsed text as markdown that v1 kept as text, so raw HTML in it ran: strikethrough counted as markdown evidence, an indented `#` line counted as a heading, and an unclosed fence hid the `⏺` marks after it (terminal evidence). Non-blocking: an unclosed `<!--` still hid the rest; a pipe table holding a `<placeholder>` fell to verbatim (structure lost, the raw-markdown gate's real cost); a quadratic tag scan (963 ms on `<b ` x 20,000); a super-linear merge in cuts; the regression set's timing check disabled by a stray comment. Fixed, each by removing an exception rather than adding a rule:
 
@@ -370,7 +370,7 @@ Gold block recovery fell 80.2 → 79.2 with line-start escaping, on one block of
 
 ## Swap (2026-10-13)
 
-v2 replaced v1 in the panel after seven cold-review rounds; Darwin waived an eighth. `format.js` is now the engine bundle (`build.sh` runs `cat engine/*.js > format.js`); v1 lives on as the gates' baseline in `research/baseline/format-v1.js` (`node gates.mjs ../baseline/format-v1.js ../../format.js`). Gates at the swap, in the panel's configuration: never-worse 94.7 / 94.1 / 100 (v1 93.0 / 92.9 / 97.4); lost words 0 (v1 56 samples); floors pass; held-out v2 minus v1 +1.3 [0.0, +3.0]; adversarial 29/29; regression set 21/21; raw markdown 0 / 1,706 worse; panel errors 0; p99 7.2 ms, worst pathological 91.6 ms (limit 500 ms); 49 named tunables against v1's 51. Rollback: revert the swap commit, then `./build.sh`.
+v2 replaced v1 in the panel after seven cold-review rounds; the maintainer waived an eighth. `format.js` is now the engine bundle (`build.sh` runs `cat engine/*.js > format.js`); v1 lives on as the gates' baseline in `research/baseline/format-v1.js` (`node gates.mjs ../baseline/format-v1.js ../../format.js`). Gates at the swap, in the panel's configuration: never-worse 94.7 / 94.1 / 100 (v1 93.0 / 92.9 / 97.4); lost words 0 (v1 56 samples); floors pass; held-out v2 minus v1 +1.3 [0.0, +3.0]; adversarial 29/29; regression set 21/21; raw markdown 0 / 1,706 worse; panel errors 0; p99 7.2 ms, worst pathological 91.6 ms (limit 500 ms); 49 named tunables against v1's 51. Rollback: revert the swap commit, then `./build.sh`.
 
 Known gaps carried into use, each a friction-log candidate rather than a case rule:
 - A glued heading line and a following bullet read as one paragraph (one gold block).

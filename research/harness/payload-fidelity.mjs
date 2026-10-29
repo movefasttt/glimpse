@@ -6,7 +6,7 @@
 //
 // Added 2026-10-24 for the auto-push decision (docs/product-direction.md 1h): the auto-push ships exactly this
 // payload, so "the auto-push never degrades the copy" is only true if this passes. Terminal chrome is demoted
-// (dimmed in the panel) but kept in every copy as plain text (Darwin, 2026-10-28): every word must survive.
+// (dimmed in the panel) but kept in every copy as plain text (the maintainer, 2026-10-28): every word must survive.
 import { createRequire } from 'module';
 const require = createRequire(new URL('../mermaid/package.json', import.meta.url));
 const { webkit } = require('playwright');

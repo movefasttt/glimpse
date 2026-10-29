@@ -1,4 +1,4 @@
-# round 26: dark tiles, own tint (Darwin: "simple is best", darker, Ghostty-like dark blue). Tiles are sampled, not invented:
+# round 26: dark tiles, own tint (the maintainer: "simple is best", darker, Ghostty-like dark blue). Tiles are sampled, not invented:
 # Ghostty screen (from /Applications/Ghostty.app icon), Journal, Freeform, Shortcuts, Stocks, Passwords, Xcode body.
 # Own tint = the tile's hue at low saturation, full brightness (round 25's mix-with-white read gray on navy).
 import os, colorsys

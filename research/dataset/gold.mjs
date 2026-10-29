@@ -1,10 +1,10 @@
-// Gold set: Darwin's real copies (corpus/<timestamp>-copy/input.txt), located in a tmux render of their
+// Gold set: the maintainer's real copies (corpus/<timestamp>-copy/input.txt), located in a tmux render of their
 // source session and labeled exactly like samples.jsonl (kind "gold"). Writes gold.jsonl.
 //
 // Renders: python3 render_gold.py <sid>:<cwd>:<w1,w2,...>  (renders/gold/<sid>-w<width>.txt)
 // Sources were found by searching main session transcripts (~/.claude/projects/*/*.jsonl) for
 // distinctive fragments of each copy (the session that produced this dataset is excluded: it contains
-// the copies as tool output). Widths: T231008-T231040 were copied at 153 (Darwin); for the rest the
+// the copies as tool output). Widths: T231008-T231040 were copied at 153 (the maintainer); for the rest the
 // width is inferred as the render width in which the copy occurs, preferring 153 when several do.
 import fs from 'node:fs';
 import { loadReplies, processRender } from './build.mjs';
@@ -96,7 +96,7 @@ for (const d of dirs) {
   const text = p.ctx.text;
   const all = [];
   for (let at = text.indexOf(input); at >= 0; at = text.indexOf(input, at + 1)) all.push(at);
-  const at = all[all.length - 1]; // the latest occurrence: what was on screen when Darwin copied
+  const at = all[all.length - 1]; // the latest occurrence: what was on screen when the maintainer copied
   const end = at + input.length;
   const lineAt = (o) => { let l = 0; while (l + 1 < p.ctx.offs.length && p.ctx.offs[l + 1] <= o) l++; return l; };
   const l0 = lineAt(at), l1 = lineAt(end);

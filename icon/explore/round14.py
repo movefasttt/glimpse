@@ -89,7 +89,7 @@ if os.environ.get("R16"):
     lab = json.load(open("sheet22-round16.json")); lab["rows"] = [f"r{radii[0][0]}/r{radii[0][1]}", f"r{radii[1][0]}/r{radii[1][1]}"]; json.dump(lab, open("sheet22-round16.json", "w"))
     print(LOGD)
 
-# variant E (round 17): lens radius locked at 320 and center at x572 (Darwin: never shrink the lens). Only the rim gets thinner; the ring's
+# variant E (round 17): lens radius locked at 320 and center at x572 (the maintainer: never shrink the lens). Only the rim gets thinner; the ring's
 # outer edge moves in, which frees room for the right-side pills. Every row has a pill; margin solved as in variant D.
 _ls = open(f"{D}/make6.py").read().split("def lensparts(")[1].split("\n\n")[0]
 exec("def lensparts(" + _ls.replace("sw = round(56 * r / 240)", "sw = round(SWK * r / 240)"))
@@ -116,3 +116,37 @@ if os.environ.get("R17"):
     cells = [[VE(k) for k in row] for row in ks]
     json.dump({"out": "sheet23-round17.png", "rows": [f"rim {round(row[0]*320/240)} / {round(row[1]*320/240)} px" for row in ks], "cols": ["", ""], "cells": cells}, open("sheet23-round17.json", "w"))
     print(LOGE)
+
+# round 17: r320 at x572 mandated (the maintainer). A no right pills / B right pills with gaps / C every row filled.
+def VE(kind, m, g):
+    global fieldsvg
+    def f(_, cx, cy, r):
+        rs = rectsB(cx, cy, r, m, g)
+        if kind == "A": rs = rs[0::2]                                  # left pills only
+        elif kind == "B": rs = [(x, y, max(w, FH)) for x, y, w in rs if w >= FH * 0.8]
+        else: rs = [(x, y, max(w, WMIN)) for x, y, w in rs]
+        return svg("".join(f'<rect x="{x:.0f}" y="{y:.0f}" width="{w:.0f}" height="{FH}" rx="{FH/2:.0f}" fill="#fff" opacity="0.8"/>' for x, y, w in rs))
+    fieldsvg = f
+    return build("blue", "gloss", "ring", 3, 320, 572, 512, 0, "tint", "white", None, f"r17{kind}m{m}g{g}")
+if os.environ.get("R17"):
+    mc = marginD(572, 320)
+    spec = [("A", 56, 14), ("B", 56, 14), ("B", 40, 10), ("C", mc, GD)]
+    json.dump({"out": "sheet23-round17.png", "rows": ["r320 x572"], "cols": [f"{k} m{m}" for k, m, g in spec], "cells": [[VE(*s) for s in spec]]}, open("sheet23-round17.json", "w"))
+
+# round 17: mandate = lens r320 at x572, original rim. A no right pills / B right pills, rows without room skipped / C every row (min pill width)
+def VE(kind, m, wmin=64):
+    global fieldsvg, WMIN
+    WMIN = wmin
+    if kind == "C": m = marginD(572, 320)
+    def rr(cx, cy, r):
+        if kind == "A": return rectsB(cx, cy, r, m, 14)[0::2]
+        if kind == "B": return rectsC(cx, cy, r, m, 14)
+        return rectsD(cx, cy, r, m)
+    fieldsvg = lambda k, cx, cy, r: svg("".join(f'<rect x="{x:.0f}" y="{y:.0f}" width="{w:.0f}" height="{FH}" rx="{FH/2:.0f}" fill="#fff" opacity="0.8"/>' for x, y, w in rr(cx, cy, r)))
+    out = build("blue", "gloss", "ring", 3, 320, 572, 512, 0, "tint", "white", None, f"r17{kind}m{m}w{wmin}"); return out, m
+if os.environ.get("R17"):
+    rows = [(56, 64), (40, 50)]; cells, ms = [], []
+    for m, w in rows:
+        r = [VE(k, m, w) for k in "ABC"]; cells.append([c for c, _ in r]); ms.append([mm for _, mm in r])
+    json.dump({"out": "sheet23-round17.png", "rows": [f"margin {m[0]}/{m[2]}" for m in ms], "cols": ["A: no right pills", "B: few missing", "C: all rows"], "cells": cells}, open("sheet23-round17.json", "w"))
+    print(ms)

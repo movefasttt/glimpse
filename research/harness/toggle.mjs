@@ -84,7 +84,7 @@ if (Buffer.byteLength(text) > 400000) {
   if (only.length !== 1 || only[0] !== 'PRE:' + text.length) fail.push('oversize input was not shown verbatim: ' + JSON.stringify(only));
 }
 
-// Demoted text reaches a copy as plain text, line by line as it arrived (Darwin, 2026-10-28); so does verbatim text.
+// Demoted text reaches a copy as plain text, line by line as it arrived (the maintainer, 2026-10-28); so does verbatim text.
 for (const [view, p] of [['raw', payloadRaw], ['formatted', payload]]) {
   for (const d of blocks.demoted) if (d.trim() && !p.text.includes(d.trim())) fail.push(view + ': demoted text missing from copy text: ' + d.slice(0, 60));
   if (p.text.includes('\u200B')) fail.push(view + ': U+200B placeholder in copy text');

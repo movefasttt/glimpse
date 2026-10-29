@@ -17,7 +17,7 @@ Calibrated 2026-10-12 (design record, "Dataset feasibility and calibration"): a 
 | `research/dataset/sessions.json` | Sessions chosen for rendering |
 | `research/dataset/renders/<sid>-w<width>.txt` | Raw `-J` capture |
 | `research/dataset/samples.jsonl` | One labeled sample per line (schema below) |
-| `research/dataset/gold.jsonl` | Darwin's real copies, same schema, scored separately |
+| `research/dataset/gold.jsonl` | the maintainer's real copies, same schema, scored separately |
 
 ## Sample schema (`samples.jsonl`)
 

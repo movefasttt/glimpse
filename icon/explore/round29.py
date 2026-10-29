@@ -1,4 +1,4 @@
-# round 29: rim survivors 02 white-opacity, 04 tint, 06 white->tint, 09 diagonal sheen (Darwin). Four intensity steps of each on color 01.
+# round 29: rim survivors 02 white-opacity, 04 tint, 06 white->tint, 09 diagonal sheen (the maintainer). Four intensity steps of each on color 01.
 import os
 src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "round28.py")).read().split("\nRIMS = {")[0]
 exec(src)

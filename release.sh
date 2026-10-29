@@ -1,6 +1,7 @@
 #!/bin/bash
 # Build a Developer ID-signed, notarized Glimpse DMG.
-# Signing only works on Darwin's personal laptop (the Developer ID key lives in its login keychain).
+# Signing only works where the Developer ID private key lives (the maintainer's login keychain).
+# The identity string is not in the repo: export IDENTITY, or write it into the gitignored .signing-identity.
 # SKIP_NOTARIZE=1 ./release.sh   signed DMG, no Apple round trip
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -8,7 +9,8 @@ cd "$(dirname "$0")"
 # until its license is accepted.
 export DEVELOPER_DIR=/Library/Developer/CommandLineTools
 
-IDENTITY="${IDENTITY:-Developer ID Application: Darwin Jung (33KR3UXR4D)}"
+IDENTITY="${IDENTITY:-$( [ -f .signing-identity ] && cat .signing-identity )}"
+[ -n "$IDENTITY" ] || { echo "Set IDENTITY or .signing-identity to your Developer ID string" >&2; exit 1; }
 PROFILE="${PROFILE:-glimpse-notary}"
 KEYCHAIN="${KEYCHAIN:-$HOME/Library/Keychains/login.keychain-db}"
 VERSION=$(sed -n 's/^VERSION=\([0-9.]*\).*/\1/p' build.sh)

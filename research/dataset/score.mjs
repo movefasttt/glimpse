@@ -234,7 +234,7 @@ export function renderReport({ formatter, sampleFile, goldFile, recs, gold }) {
       'block rec = truth blocks matched exactly (type + normalized text/rows) by in-order alignment against blocks lexed from the formatter markdown. ' +
       'Per-type "never-worse on type" = samples containing the type with no damage on that type\'s lines.', '',
     renderSet('Samples', recs),
-    gold ? renderSet('Gold (Darwin\'s real copies)', gold) : '',
+    gold ? renderSet('Gold (the maintainer\'s real copies)', gold) : '',
   ].join('\n');
 }
 

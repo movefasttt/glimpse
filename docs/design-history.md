@@ -18,7 +18,7 @@ Agent survey plus hands-on tests on the real mermaid sample and 12 written snipp
 - **No product found that does fence-free code segmentation** (thin evidence: web search only).
 - Parser validation is clean for JSON (`JSON.parse`) and diffs (strict line shape): no false positives on the other samples.
 
-Proposed approach, pending Darwin: **proven before formatted** - (1) invert Claude Code's code-block display (bare info-string line over an indented block); (2) parser-confirmed formats (mermaid, JSON, diff); (3) segment mixed text by blank lines and indentation, each block a candidate; (4) anything unconfirmed renders as plain monospace with line breaks kept. Language guessing only colors blocks already confirmed as code. *Superseded 2026-10-12: code vs not-code only, no language guessing - see Decisions.*
+Proposed approach, pending the maintainer: **proven before formatted** - (1) invert Claude Code's code-block display (bare info-string line over an indented block); (2) parser-confirmed formats (mermaid, JSON, diff); (3) segment mixed text by blank lines and indentation, each block a candidate; (4) anything unconfirmed renders as plain monospace with line breaks kept. Language guessing only colors blocks already confirmed as code. *Superseded 2026-10-12: code vs not-code only, no language guessing - see Decisions.*
 
 ### Mermaid renderer (2026-10-12)
 
@@ -35,7 +35,7 @@ Lean: mermaid 12.1.0 with the base theme, colors in `themeCSS` only (mermaid's c
 
 ### Dataset feasibility and calibration (2026-10-12)
 
-**Goal** (Darwin): a large, realistic, dirty dataset with known answers, so every change to the formatting logic gets a score instead of an impression. 100% is impossible by nature, and people select and prefer differently.
+**Goal** (the maintainer): a large, realistic, dirty dataset with known answers, so every change to the formatting logic gets a score instead of an impression. 100% is impossible by nature, and people select and prefer differently.
 
 **What Claude Code's terminal does to markdown** (rendered from a known source, 2026-10-12):
 
@@ -53,7 +53,7 @@ Lean: mermaid 12.1.0 with the base theme, colors in `themeCSS` only (mermaid's c
 
 **Terminal copy behavior**: a line that fills the terminal's full width is joined with the next on copy (soft-wrap semantics). A table as wide as the terminal arrives as **one line with no newlines** (corpus `2026-10-12T225643-copy`: row borders every 238 chars = 2 x 119 columns). Recoverable by cutting at the table width. Text rows glue too, after a resize: Claude Code redraws with rows padded to the new width, and the copied newline does not reset the column (rows carry on from where the previous content ended). Corpus `2026-10-22T222202-copy`, `2026-10-12T230919-copy`.
 
-**Calibration** (Darwin made 17 deliberately fuzzy copies from a resumed session):
+**Calibration** (the maintainer made 17 deliberately fuzzy copies from a resumed session):
 - 18/18 copies are exact slices of `cmux read-screen --scrollback` of the same tab (17 byte-exact, 1 after trailing-space trim). A copy is a slice of the screen's logical lines.
 - 16/17 reproduce exactly in a hidden `tmux` render of the same session at the same width (153 columns), captured with `capture-pane -p -J`. The miss included the user's shell prompt line, which exists only in the real tab.
 - So: **dataset input = slices of a tmux `-J` capture of a resumed session**; **known answer = the raw markdown in the session transcript**. Resuming with `--fork-session` is read-only (nothing persisted).
@@ -75,7 +75,7 @@ Lean: mermaid 12.1.0 with the base theme, colors in `themeCSS` only (mermaid's c
 
 ## Format layer and its scores (2026-10-12)
 
-**Scores** (2,977 labeled samples from 60 real sessions at widths 100 and 150, six selection kinds; gold = 39 of Darwin's real copies):
+**Scores** (2,977 labeled samples from 60 real sessions at widths 100 and 150, six selection kinds; gold = 39 of the maintainer's real copies):
 
 | | Baseline (old pipeline) | format.js v1 | format.js final |
 |---|---|---|---|
@@ -107,7 +107,7 @@ One cold reviewer (correctness tracer) reproduced every reported number, then fo
 
 **Deliberately not fixed - for the step-back review** (each is a design question, not a patch):
 1. **Join confidence on short selections.** With no prompt-box border, the longest line is taken as the wrap width, so a 2-3 line selection like `Status: done…` / `Owner: me` joins. Needs a principled notion of "confident enough to join", not another threshold.
-2. **Markdown-mode trigger.** One backtick, `**`, or link flips the whole paste to raw markdown, which loses single line breaks in plain text and treats `Vec<String>` as an HTML tag. Related: raw HTML passes through marked into the page, and the panel does not block navigations. Darwin ruled sanitization out as a security concern (2026-10-12); escaping HTML for *correct display* is a separate question.
+2. **Markdown-mode trigger.** One backtick, `**`, or link flips the whole paste to raw markdown, which loses single line breaks in plain text and treats `Vec<String>` as an HTML tag. Related: raw HTML passes through marked into the page, and the panel does not block navigations. the maintainer ruled sanitization out as a security concern (2026-10-12); escaping HTML for *correct display* is a separate question.
 3. **Chrome detection on real copies.** Gold chrome recognition dropped to 0% after the safety fixes (prompt lines without a `❯` line are now kept as text - safe, but noisy). The chrome classifier is a pile of patterns; it deserves its own design.
 4. **The architecture of format.js itself.** It grew by measured rule additions (~550 lines): classification order, block splits and joins interact. Before more rules: is a scored-candidates design (each block type scores itself, best wins) cleaner than an ordered cascade?
 5. **Inherent residue**: prose inside code fences, headings at the end of a selection, a single `Header: value` group, partial diagrams.
@@ -115,7 +115,7 @@ One cold reviewer (correctness tracer) reproduced every reported number, then fo
 
 ## Direction after the first build (2026-10-13)
 
-**Darwin's read**: the rules are drifting toward overfitted stitch-and-fix; the dataset will always be biased (one person, one tool); fuzzy questions have no correct answer, so they need principles, not more thresholds; next is design, not more data.
+**the maintainer's read**: the rules are drifting toward overfitted stitch-and-fix; the dataset will always be biased (one person, one tool); fuzzy questions have no correct answer, so they need principles, not more thresholds; next is design, not more data.
 
 ### Design principles for the format engine v2 (proposed, to be ratified)
 
@@ -134,7 +134,7 @@ One cold reviewer (correctness tracer) reproduced every reported number, then fo
 
 | Step | What | How |
 |---|---|---|
-| 1 | **Design doc: format engine v2** - principles above made concrete (candidate readings, evidence features, cost classes, source profile, demote-not-delete rendering) | Write, one cold doc reviewer, Darwin ratifies. No code. **Done: revision 3 ratified 2026-10-13** (docs/engine-v2.md) |
+| 1 | **Design doc: format engine v2** - principles above made concrete (candidate readings, evidence features, cost classes, source profile, demote-not-delete rendering) | Write, one cold doc reviewer, the maintainer ratifies. No code. **Done: revision 3 ratified 2026-10-13** (docs/engine-v2.md) |
 | 2 | **Build v2 beside v1**, same contract | v1 stays as the baseline. v2 must match or beat v1 on every guard rail with fewer rules. Agents in parallel: engine core, evidence features, Claude Code profile. **Done: v2 is live, 2026-10-13** (`format.js` is the engine bundle; v1 kept as the gate baseline in `research/baseline/format-v1.js`) |
 | 2' | **Features**, in parallel with 2 (Swift + panel only, no format code) | Copy formatted / markdown / image, raw toggle |
 | 3 | **De-bias the eval** | ~50 hand-picked samples from other sources into a separate set |
