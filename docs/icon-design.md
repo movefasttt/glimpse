@@ -32,7 +32,7 @@ Split the design into independent axes, vary one at a time, render a grid, decid
 - Gloss body (top sheet + base glow) plus glass layers: the strongest Liquid Glass read.
 - Lens tier 3: rim highlight, hot spot, bottom caustic, inner hairline, gloss sheet clipped to the lens.
 - **Tint content inside the lens** (lines in pale blue-white tints, calm) was the only content color the maintainer found worth keeping (2026-10-29). Gray fragments outside gave the best contrast; white fragments compete with the lens, warm ones look muddy.
-- Fragments vanish below 64 px in every variant, so the small icon is the lens and its content alone.
+- Fragments are unreadable below 64 px in every variant, so the small sizes were expected to read as the lens and its content alone. **Measured 2026-10-29 on the shipped `.icns` and it is the other way round**: `iconutil -c iconset` expands the real per-size slices (16/32/64 are distinct renders, not downscales), and printed as a luminance map, the 32 px slice shows the lens ring and its bars clearly, while the 16 px slice loses the *lens content* - the bright marks sit in the upper third, the lower half is near-uniform tile. Fragments survive; the lens does not. Worth knowing if a future round changes the composition: check the expanded 16 px slice, not a downscale.
 
 ## What did not work
 - Flat tiles with a thin edge highlight (our first render): glass without depth.
@@ -101,7 +101,7 @@ Next: rim color and texture.
 | Rim | linear gradient top->bottom: white -> tint midpoint of #dbe5ff..#85a2f2 ("06 lighter") |
 | Inside | three bars (round 21 2a geometry), own tint #dbe5ff / #aabffa / #85a2f2 (tile hue, low saturation, full value) |
 | Pills | one white pill per row, 6 rows x 52 px, both sides, inner ends on the lens curve, outer margin 40, ragged A, right row 3 missing, opacity 0.5, inside the glass front group |
-Not done yet: check at 128/64/32/16 px; swap into `icon/AppIcon.icon` and rebuild the app.
+Not done yet: whether the 16 px slice reads as Glimpse to a person (see "What worked"), and the menu bar glyph in a real menu bar (mock sheet only).
 
 ## Process that worked (reproduce this)
 1. **Lock a mandate list and re-read it before every round.** Each decision (lens r320, x572, original rim, bars, tint) goes into a table the moment the maintainer makes it. I broke locked decisions three times (moved the lens, shrank it, dropped the tint) and each cost a round.
