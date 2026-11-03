@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "app.py", line 12, in <module>
+    main()
+  File "app.py", line 8, in main
+    raise ValueError("bad input")
+ValueError: bad input

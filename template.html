@@ -1,0 +1,225 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<!-- Trust promise: copied text can never reach the network. A markdown image or a raw
+     <img>/<script> in someone's clipboard stays inert; only inline script, inline style
+     and data: images are allowed. Kept as policy, not sanitization. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; script-src-attr 'none'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<style>
+
+:root {
+  color-scheme: light dark;
+  --fg: rgba(0,0,0,.86); --muted: rgba(0,0,0,.5);
+  --line: rgba(0,0,0,.09); --chip: rgba(0,0,0,.05); --well: rgba(0,0,0,.035);
+  --accent: -apple-system-control-accent;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: rgba(255,255,255,.88); --muted: rgba(255,255,255,.5);
+    --line: rgba(255,255,255,.1); --chip: rgba(255,255,255,.08); --well: rgba(255,255,255,.05);
+  }
+}
+html, body { background: transparent; margin: 0; }
+body {
+  font: 14px/1.6 -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--fg);
+  padding: 34px 28px 22px;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: anywhere;
+}
+#doc > :first-child { margin-top: 0; }
+#doc > :last-child { margin-bottom: 0; }
+
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.4em 0 .5em; letter-spacing: -.01em; }
+h1 { font-size: 1.6em; font-weight: 700; }
+h2 { font-size: 1.3em; font-weight: 650; }
+h3 { font-size: 1.1em; font-weight: 600; }
+h4 { font-size: 1em; font-weight: 600; color: var(--muted); }
+p, ul, ol, blockquote, pre, table { margin: 0 0 .9em; }
+ul, ol { padding-left: 1.4em; }
+li { margin: .2em 0; }
+li > ul, li > ol { margin: .2em 0 0; }
+li:has(> input[type=checkbox]) { list-style: none; margin-left: -1.3em; }
+input[type=checkbox] { margin: 0 .45em 0 0; accent-color: var(--accent); }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { font-weight: 650; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 1.4em 0; }
+
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: .1em 0 .1em 1em;
+  color: var(--muted);
+}
+
+code, pre { font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
+:not(pre) > code { background: var(--chip); padding: .12em .38em; border-radius: 5px; }
+pre {
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+
+/* Prose keeps the 680 panel's measure when wide blocks widen the panel. */
+#doc > :is(p, ul, ol, blockquote, h1, h2, h3, h4, h5, h6) { max-width: 624px; }
+table { border-collapse: separate; border-spacing: 0; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; display: block; overflow-x: auto; max-width: max-content; }
+th, td { padding: 6px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; background: var(--well); }
+tr:last-child td { border-bottom: 0; }
+th + th, td + td { border-left: 1px solid var(--line); }
+
+img { max-width: 100%; border-radius: 6px; }
+
+/* Engine v2 blocks (docs/dataset.md). Verbatim = the floor: lines exactly as they arrived, body font, breaks kept.
+   Demoted = terminal UI dimmed in place: readable, quieter than the reply around it; copies keep it as plain text. */
+.g-verbatim { white-space: pre; overflow-x: auto; margin: 0 0 .9em; }  /* geometry: never wraps, scrolls past the panel's cap */
+.g-demoted { white-space: pre-wrap; font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, monospace; color: var(--muted); margin: 0 0 .9em; }
+
+/* Raw toggle: the original text as-is - monospace, every line break kept, long lines wrap instead of scrolling. */
+#raw { white-space: pre-wrap; background: none; border: 0; border-radius: 0; padding: 0; margin: 0; }
+
+/* Mermaid diagrams: theme tested in research/mermaid (base theme + themeCSS on these vars). */
+:root { --label-bg: rgba(243,243,243,.92); }
+@media (prefers-color-scheme: dark) { :root { --label-bg: rgba(46,46,48,.92); } }
+.diagram { margin: 0 0 .9em; overflow-wrap: normal; line-height: 1.35; }
+.diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+/* color-mix needs Safari 16.2; macOS 13.0 ships 16.1, which drops the second rule and keeps this one */
+::selection { background: rgba(0, 122, 255, .3); }
+::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+</style>
+<script>/*MARKED*/</script>
+<script>/*FORMAT*/</script>
+<script>/*MERMAID*/</script>
+</head>
+<body>
+<main id="doc"></main>
+<pre id="raw" hidden></pre>
+<script>
+const source = /*SOURCE*/;
+let copyText = null;  // the engine's copy markdown (unescaped; demoted chrome verbatim); null = shown verbatim
+const loadToken = /*TOKEN*/0;  // main.swift swaps in the load's number; the harnesses leave 0
+const hasMermaid = typeof mermaid !== 'undefined';
+const postSize = () => requestAnimationFrame(() =>
+  window.webkit.messageHandlers.size.postMessage(Math.ceil(document.body.getBoundingClientRect().height)));
+
+// Panel width (main.swift clamps it to 680..85% of the screen): the widest block at its natural width - code,
+// verbatim text, diagrams, tables with no cell wrapped - none of which depends on the panel's width. Prose and
+// demoted terminal UI wrap, so they never set it. Posted after each render and each zoom change.
+const postWidth = () => {
+  const doc = document.getElementById('doc');
+  if (doc.hidden) return;  // the raw view keeps the formatted view's width
+  const pad = parseFloat(getComputedStyle(document.body).paddingLeft) + parseFloat(getComputedStyle(document.body).paddingRight);
+  const natural = Math.max(0,
+    ...[...doc.querySelectorAll('pre, .g-verbatim')].map(e => e.scrollWidth + 2),
+    ...[...doc.querySelectorAll('.diagram svg')].map(e => e.viewBox && e.viewBox.baseVal ? e.viewBox.baseVal.width : 0),
+    ...[...doc.querySelectorAll('table')].map(e => {
+      const c = e.cloneNode(true);
+      c.style.cssText = 'position:absolute;visibility:hidden;display:table;width:max-content;max-width:none';
+      document.body.append(c);
+      const w = c.getBoundingClientRect().width;
+      c.remove();
+      return w;
+    }));
+  window.webkit?.messageHandlers?.width?.postMessage(Math.ceil(natural + pad));
+};
+// main.swift calls this after a zoom change: both measures again, at the new scale.
+window.glimpseMeasure = () => { postWidth(); postSize(); };
+
+// Called by the panel's buttons (main.swift). Toggle returns true while the original is showing.
+window.glimpseToggleRaw = () => {
+  const doc = document.getElementById('doc'), raw = document.getElementById('raw');
+  raw.textContent = source;
+  doc.hidden = !doc.hidden;
+  raw.hidden = !doc.hidden;
+  scrollTo(0, 0);
+  postSize();
+  return !raw.hidden;
+};
+// What every copy writes, plain text only: the engine's markdown, one step from the copied text (structure: fences,
+// tables, lists, headings, without the escaping that exists only for the panel's parser; links keep their URLs,
+// diagrams their source). Always the formatted view, even while the original is showing.
+window.glimpseCopyPayload = () => ({ text: copyText == null ? source : copyText });
+
+if (hasMermaid) {
+  const font = '-apple-system, BlinkMacSystemFont, sans-serif';
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  mermaid.initialize({
+    startOnLoad: false, securityLevel: 'strict', suppressErrorRendering: true,
+    theme: 'base', look: 'classic', fontFamily: font,
+    // Concrete Apple system grays per appearance give every diagram type a native base palette
+    // (mermaid's color math needs real colors, not CSS vars); themeCSS below refines flowcharts.
+    darkMode: dark,
+    themeVariables: Object.assign({ fontFamily: font, fontSize: '13px' }, dark ? {
+      primaryColor: '#2c2c2e', primaryBorderColor: '#48484a', primaryTextColor: '#f2f2f7',
+      secondaryColor: '#3a3a3c', tertiaryColor: '#242426', lineColor: '#8e8e93', textColor: '#f2f2f7',
+      noteBkgColor: '#3a3a3c', noteTextColor: '#f2f2f7', noteBorderColor: '#48484a',
+    } : {
+      primaryColor: '#f2f2f7', primaryBorderColor: '#d1d1d6', primaryTextColor: '#1d1d1f',
+      secondaryColor: '#e5e5ea', tertiaryColor: '#fafafa', lineColor: '#8e8e93', textColor: '#1d1d1f',
+      noteBkgColor: '#e5e5ea', noteTextColor: '#1d1d1f', noteBorderColor: '#d1d1d6',
+    }),
+    flowchart: { htmlLabels: true, padding: 12, nodeSpacing: 36, rankSpacing: 44, wrappingWidth: 220 },
+    themeCSS: `
+      .node rect, .node polygon, .node circle, .node path { fill: var(--well) !important; stroke: var(--line) !important; stroke: color-mix(in srgb, var(--fg) 16%, transparent) !important; stroke-width: 1px !important; }
+      .node rect { rx: 7px; ry: 7px; }
+      .cluster rect { fill: var(--well) !important; stroke: var(--line) !important; rx: 9px; ry: 9px; }
+      .nodeLabel, .label, .cluster-label { color: var(--fg) !important; fill: var(--fg) !important; }
+      .flowchart-link, .edgePath .path, .relation, path.transition { stroke: var(--muted) !important; stroke-width: 1px !important; }
+      .marker, marker path { fill: var(--muted) !important; stroke: var(--muted) !important; }
+      .edgeLabel, .edgeLabel p, .edgeLabel span, .labelBkg { background: transparent !important; background-color: transparent !important; color: var(--muted) !important; }
+      .edgeLabel rect { fill: transparent !important; opacity: 0 !important; }
+      .edgeLabel p { font-size: 12px; background: var(--label-bg) !important; border-radius: 5px; padding: 0 5px; }`,
+  });
+}
+
+(async () => {
+  marked.use({ gfm: true, breaks: false });
+  const doc = document.getElementById('doc');
+  // Never a blank panel, never a stall: the original text as-is.
+  const showVerbatim = () => {
+    const pre = document.createElement('pre');
+    pre.textContent = source;
+    doc.replaceChildren(pre);
+  };
+  // Measured 2026-10-25 in headless WebKit (markdown with tables and fences, the slowest shape): ~310 ms at 250 KB,
+  // ~560 ms at 500 KB, linear below 2 MB. 400 KB keeps the render near the 500 ms limit in docs/design.md.
+  const MAX_FORMAT_BYTES = 400000;
+  if (new TextEncoder().encode(source).length > MAX_FORMAT_BYTES) {
+    showVerbatim();
+  } else {
+    try {
+      const parseMermaid = hasMermaid ? src => mermaid.parse(src, { suppressErrors: true }) : null;
+      // the same markdown -> HTML the panel shows, so the engine's no-lost-word check runs on what a reader sees
+      const { markdown, copy } = await GlimpseFormat.format(source, { parseMermaid, toHtml: md => marked.parse(md) });
+      doc.innerHTML = marked.parse(markdown);
+      copyText = copy;
+    } catch (e) {
+      showVerbatim();
+    }
+  }
+
+  let n = 0;
+  for (const code of doc.querySelectorAll('pre code.language-mermaid')) {
+    if (!hasMermaid) continue;
+    try {
+      const { svg } = await mermaid.render('glimpse-m' + n++, code.textContent);
+      const div = document.createElement('div');
+      div.className = 'diagram';
+      div.innerHTML = svg;
+      code.parentElement.replaceWith(div);
+    } catch (e) { /* invalid diagram: keep it as a code block */ }
+  }
+
+  doc.querySelectorAll('input[type=checkbox]').forEach(el => el.disabled = true);
+  postWidth();
+  postSize();
+  // The load's final state (diagrams drawn): main.swift pushes the ⌘C⌘C result on this, not on a size message.
+  window.webkit.messageHandlers.rendered.postMessage(loadToken);
+})();
+</script>
+</body>
+</html>

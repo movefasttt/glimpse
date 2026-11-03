@@ -1,0 +1,15 @@
+#!/bin/bash
+# Render markdown in a Glimpse panel: `glimpse file.md` or `... | glimpse`
+set -euo pipefail
+if [[ $# -gt 0 ]]; then
+  open -a Glimpse "$1"
+else
+  # The app reads the file asynchronously and removes its own glimpse-* drop after rendering.
+  # This sweep is only for runs where the app was never opened or failed to read.
+  dir="${TMPDIR:-/tmp}/glimpse-$(id -u)"
+  mkdir -p "$dir"
+  find "$dir" -name 'glimpse-*.md' -mmin +60 -delete 2>/dev/null || true
+  f="$dir/glimpse-$$.md"
+  cat > "$f"
+  open -a Glimpse "$f"
+fi
