@@ -35,6 +35,8 @@ MainActor.assumeIsolated {
         render("1-demo", dark: dark, demo, into: dir)
         let worked = CardModel(); worked.screen = .demo; worked.worked = true
         render("2-demo-worked", dark: dark, worked, into: dir)
+        let pushed = CardModel(); pushed.screen = .demo; pushed.worked = true; pushed.pushed = true
+        render("2b-demo-pushed", dark: dark, pushed, into: dir)
         let settings = CardModel(); settings.loginOn = true
         render("3-settings", dark: dark, settings, into: dir)
         let waiting = CardModel(); waiting.renderOn = true; waiting.waitingForInputMonitoring = true

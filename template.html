@@ -87,6 +87,20 @@ img { max-width: 100%; border-radius: 6px; }
 @media (prefers-color-scheme: dark) { :root { --label-bg: rgba(46,46,48,.92); } }
 .diagram { margin: 0 0 .9em; overflow-wrap: normal; line-height: 1.35; }
 .diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+/* First-pushes hint (main.swift glimpseHint): a frosted HUD capsule over the bottom edge - it blurs the content behind it,
+   so it stays readable on a table or diagram. Grows 0.96 -> 1 while fading in (220 ms); gone after 3 s or any interaction. */
+#hint { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%) scale(.96); opacity: 0;
+  transition: opacity .22s ease-out, transform .22s cubic-bezier(.2, .9, .3, 1.2);
+  display: flex; align-items: center; gap: 6px; padding: 8px 14px 8px 12px; border-radius: 999px; white-space: nowrap; pointer-events: none;
+  font: 500 12.5px/1 -apple-system, system-ui, sans-serif; color: var(--fg);
+  background: rgba(246,246,248,.62); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: inset 0 0 0 .5px rgba(255,255,255,.6), 0 0 0 .5px rgba(0,0,0,.1), 0 8px 24px rgba(0,0,0,.12); }
+#hint.on { opacity: 1; transform: translateX(-50%) scale(1); }
+#hint .ok { color: #28cd41; display: flex; }  /* system green */
+@media (prefers-color-scheme: dark) {
+  #hint { background: rgba(40,40,44,.55); box-shadow: inset 0 0 0 .5px rgba(255,255,255,.14), 0 0 0 .5px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.4); }
+  #hint .ok { color: #32d74b; }
+}
 /* color-mix needs Safari 16.2; macOS 13.0 ships 16.1, which drops the second rule and keeps this one */
 ::selection { background: rgba(0, 122, 255, .3); }
 ::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); }
@@ -142,6 +156,23 @@ window.glimpseToggleRaw = () => {
 // What every copy writes, plain text only: the engine's markdown, one step from the copied text (structure: fences,
 // tables, lists, headings, without the escaping that exists only for the panel's parser; links keep their URLs,
 // diagrams their source). Always the formatted view, even while the original is showing.
+// After one of the first ⌘C⌘C pushes (main.swift counts them): says what happened.
+window.glimpseHint = () => {
+  if (document.getElementById('hint')) return;
+  const h = document.createElement('div');
+  h.id = 'hint';
+  h.innerHTML = '<span class="ok"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M3.2 8.4l3.1 3.1 6.5-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Formatted text copied to clipboard';
+  document.body.append(h);
+  requestAnimationFrame(() => h.classList.add('on'));
+  const events = ['pointerdown', 'keydown', 'wheel'];
+  const hide = () => {
+    events.forEach(e => removeEventListener(e, hide, true));
+    h.classList.remove('on');
+    setTimeout(() => h.remove(), 300);
+  };
+  events.forEach(e => addEventListener(e, hide, true));
+  setTimeout(hide, 3000);
+};
 window.glimpseCopyPayload = () => ({ text: copyText == null ? source : copyText });
 
 if (hasMermaid) {

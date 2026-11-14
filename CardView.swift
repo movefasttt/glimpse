@@ -9,6 +9,7 @@ final class CardModel: ObservableObject {
 
     @Published var screen: Screen = .settings
     @Published var worked = false
+    @Published var pushed = false  // a ⌘C⌘C push landed while the demo was up: the headline says it
     @Published var loginOn = false
     @Published var pushOn = true  // a render replaces the clipboard with the formatted text (opt-out)
     @Published var renderOn = false  // ⌘C with nothing selected renders the clipboard (opt-in)
@@ -38,25 +39,30 @@ struct CardView: View {
     static let width: CGFloat = 420
     static let repoURL = "https://github.com/movefasttt/glimpse"
 
-    /// Demo sample: a hard-wrapped sentence, a bare Mermaid diagram and a box table, as a terminal shows them.
-    /// The table keeps a separator between rows, as Claude Code draws it: without one the engine reads the rows
-    /// as one wrapped cell. Verified with research/harness/panel.mjs (blocks: P, DIV.diagram, TABLE).
+    /// Demo sample: a Claude Code reply as the terminal shows it - "⏺ " lead, 2-space indent, wrapped lines greedily full
+    /// at 44 columns (a ragged hand wrap would be kept as hard breaks), a wrapped bullet, a bare Mermaid diagram and a
+    /// box table. The table keeps a separator between rows, as Claude Code draws it: without one the engine reads the
+    /// rows as one wrapped cell. Verified with research/harness/panel.mjs (blocks: P, UL, DIV.diagram, TABLE) and
+    /// toggle.mjs (copy payload: wraps rejoined, no lost word).
     static let sample = """
-    The terminal wrapped this sentence at fifty
-    columns, so it breaks mid-thought wherever
-    you paste it.
+    ⏺ The terminal wrapped this sentence at its
+      edge, so it breaks mid-thought wherever
+      you paste it.
 
-    graph LR
-      A[Broken output] --> B[Glimpse]
-      B --> C[Paste-ready Markdown]
+      - Bullets wrap too, and their second line
+        lands at the wrong indent.
 
-    ┌──────────┬───────┐
-    │ Tool     │ Calls │
-    ├──────────┼───────┤
-    │ Read     │    12 │
-    ├──────────┼───────┤
-    │ Edit     │     4 │
-    └──────────┴───────┘
+      graph LR
+        A[Broken output] --> B[Glimpse]
+        B --> C[Paste-ready Markdown]
+
+      ┌──────────┬───────┐
+      │ Tool     │ Calls │
+      ├──────────┼───────┤
+      │ Read     │    12 │
+      ├──────────┼───────┤
+      │ Edit     │     4 │
+      └──────────┴───────┘
     """
 
     @ObservedObject var model: CardModel
@@ -75,7 +81,9 @@ struct CardView: View {
     private var demo: some View {
         VStack(alignment: .leading, spacing: 14) {
             if model.worked {
-                Text("✓ Works in any app.").font(.title2.bold()).foregroundStyle(.green)
+                // Only when the push really landed: with auto-copy off the clipboard still holds the original.
+                Text(model.pushed ? "✓ Formatted text copied to clipboard" : "✓ Works in any app.")
+                    .font(.title2.bold()).foregroundStyle(.green)
             } else {
                 Text("Try it").font(.title2.bold())
                 HStack(spacing: 4) {

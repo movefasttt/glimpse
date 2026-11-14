@@ -202,6 +202,9 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
     let copyButton = Viewer.button("doc.on.doc", "Copy formatted", #selector(Viewer.copyShown))
     let imageButton = Viewer.button("photo", "Copy as image", #selector(Viewer.copyImage))
     let rawButton = Viewer.button("chevron.left.forwardslash.chevron.right", "Show original", #selector(Viewer.toggleRaw))
+    /// Pushes so far that showed the page's first-run hint ("Formatted text copied to clipboard").
+    static let hintsKey = "pushHintsShown"
+    static let hintPushes = 3
 
     override init() {
         panel = GlimpsePanel(
@@ -297,6 +300,7 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
             .replacingOccurrences(of: "/*TOKEN*/0", with: String(loadToken))
         web.loadHTMLString(html, baseURL: nil)
         showRawState(false)
+        copyButton.image = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: copyButton.toolTip)
         panel.engaged = false
 
         let mouse = NSEvent.mouseLocation
@@ -318,7 +322,7 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
     func userContentController(_ uc: WKUserContentController, didReceive message: WKScriptMessage) {
         if message.name == "rendered" {
             if message.body as? Int == loadToken, let count = pushOverCount, count == NSPasteboard.general.changeCount {
-                copyFormatted()
+                pushFormatted(over: count)
             }
             pushOverCount = nil
             return
@@ -387,13 +391,16 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
     }
 
     /// User-initiated, so it fits "read-only toward the world". The watcher skips the write; the icon confirms it.
-    func writePasteboard(_ button: NSButton, restore symbol: String, _ fill: (NSPasteboard) -> Void) {
+    func writePasteboard(_ button: NSButton, restore symbol: String, after delay: TimeInterval = 1, tint: NSColor? = nil,
+                         _ fill: (NSPasteboard) -> Void) {
         let pb = NSPasteboard.general
         pb.clearContents()
         fill(pb)
         (NSApp.delegate as? AppDelegate)?.watcher?.skipOwnWrite()
-        button.image = NSImage(systemSymbolName: "checkmark", accessibilityDescription: nil)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+        let check = NSImage(systemSymbolName: "checkmark", accessibilityDescription: nil)!
+        // A palette-colored symbol, not contentTintColor: a headless render of the strip drew the tinted one grey.
+        button.image = tint.map { check.withSymbolConfiguration(.init(paletteColors: [$0]))! } ?? check
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: button.toolTip)
         }
     }
@@ -414,6 +421,30 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
             // Plain text only (the maintainer, 2026-10-28): no HTML flavor, so every app receives the same minimal markdown.
             self.writePasteboard(self.copyButton, restore: "doc.on.doc") { $0.setString(text, forType: .string) }
         }
+    }
+
+    /// The ⌘C⌘C push, with its feedback. Feedback only when the clipboard really changed to the formatted text: a payload
+    /// equal to what is already there (plain prose) still writes, as before, but announces nothing.
+    func pushFormatted(over count: Int) {
+        web.evaluateJavaScript("glimpseCopyPayload()") { result, _ in
+            let pb = NSPasteboard.general
+            guard let p = result as? [String: String], let text = p["text"], !text.isEmpty,
+                  pb.changeCount == count, self.panel.isVisible else { return }  // a newer copy or a closed panel wins
+            let changed = pb.string(forType: .string) != text
+            // A: a real push gets the green checkmark for 1.5 s; an unchanged one the plain 1 s one.
+            self.writePasteboard(self.copyButton, restore: "doc.on.doc", after: changed ? 1.5 : 1,
+                                 tint: changed ? .systemGreen : nil) { $0.setString(text, forType: .string) }
+            if changed { self.announcePush() }
+        }
+    }
+
+    /// B: the first pushes also get the page's hint (the green checkmark is A). The first-run card's headline replaces it.
+    func announcePush() {
+        let d = UserDefaults.standard
+        let byCard = (NSApp.delegate as? AppDelegate)?.card.didPush() ?? false
+        guard !byCard, d.integer(forKey: Self.hintsKey) < Self.hintPushes else { return }
+        d.set(d.integer(forKey: Self.hintsKey) + 1, forKey: Self.hintsKey)
+        web.evaluateJavaScript("glimpseHint()")
     }
 
     @objc func copyImage() {
