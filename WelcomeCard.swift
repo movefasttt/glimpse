@@ -37,7 +37,6 @@ final class WelcomeCard: NSObject, NSWindowDelegate {
     func show(tryIt: Bool) {
         model.screen = tryIt ? .demo : .settings
         model.worked = false
-        model.pushed = false
         refresh()
         let w = window ?? build()
         window = w
@@ -53,14 +52,6 @@ final class WelcomeCard: NSObject, NSWindowDelegate {
     func didRender(_ raw: String) {
         guard model.screen == .demo, window?.isVisible == true else { return }
         model.worked = true
-    }
-
-    /// A ⌘C⌘C push landed. Returns true when the demo is up: the card's headline says it there, so the panel
-    /// skips its own first-run hint (one lesson, not two).
-    func didPush() -> Bool {
-        guard model.screen == .demo, window?.isVisible == true else { return false }
-        model.pushed = true
-        return true
     }
 
     private func build() -> NSWindow {

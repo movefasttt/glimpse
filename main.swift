@@ -399,8 +399,11 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
         (NSApp.delegate as? AppDelegate)?.watcher?.skipOwnWrite()
         let check = NSImage(systemSymbolName: "checkmark", accessibilityDescription: nil)!
         // A palette-colored symbol, not contentTintColor: a headless render of the strip drew the tinted one grey.
-        button.image = tint.map { check.withSymbolConfiguration(.init(paletteColors: [$0]))! } ?? check
+        let shown = tint.map { check.withSymbolConfiguration(.init(paletteColors: [$0]))! } ?? check
+        button.image = shown
+        // Only undo this checkmark: a newer push (or a new panel) has replaced it, and its own timer restores it.
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            guard button.image === shown else { return }
             button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: button.toolTip)
         }
     }
@@ -423,26 +426,23 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
         }
     }
 
-    /// The ⌘C⌘C push, with its feedback. Feedback only when the clipboard really changed to the formatted text: a payload
-    /// equal to what is already there (plain prose) still writes, as before, but announces nothing.
+    /// The ⌘C⌘C push, with its feedback. One gate for both: the push wrote the clipboard -> green checkmark + hint.
     func pushFormatted(over count: Int) {
         web.evaluateJavaScript("glimpseCopyPayload()") { result, _ in
             let pb = NSPasteboard.general
             guard let p = result as? [String: String], let text = p["text"], !text.isEmpty,
                   pb.changeCount == count, self.panel.isVisible else { return }  // a newer copy or a closed panel wins
-            let changed = pb.string(forType: .string) != text
-            // A: a real push gets the green checkmark for 1.5 s; an unchanged one the plain 1 s one.
-            self.writePasteboard(self.copyButton, restore: "doc.on.doc", after: changed ? 1.5 : 1,
-                                 tint: changed ? .systemGreen : nil) { $0.setString(text, forType: .string) }
-            if changed { self.announcePush() }
+            self.writePasteboard(self.copyButton, restore: "doc.on.doc", after: 1.5, tint: .systemGreen) {
+                $0.setString(text, forType: .string)
+            }
+            self.announcePush()
         }
     }
 
-    /// B: the first pushes also get the page's hint (the green checkmark is A). The first-run card's headline replaces it.
+    /// B: the first pushes also get the page's hint (the green checkmark is A), the welcome demo included.
     func announcePush() {
         let d = UserDefaults.standard
-        let byCard = (NSApp.delegate as? AppDelegate)?.card.didPush() ?? false
-        guard !byCard, d.integer(forKey: Self.hintsKey) < Self.hintPushes else { return }
+        guard d.integer(forKey: Self.hintsKey) < Self.hintPushes else { return }
         d.set(d.integer(forKey: Self.hintsKey) + 1, forKey: Self.hintsKey)
         web.evaluateJavaScript("glimpseHint()")
     }

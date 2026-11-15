@@ -9,7 +9,6 @@ final class CardModel: ObservableObject {
 
     @Published var screen: Screen = .settings
     @Published var worked = false
-    @Published var pushed = false  // a ⌘C⌘C push landed while the demo was up: the headline says it
     @Published var loginOn = false
     @Published var pushOn = true  // a render replaces the clipboard with the formatted text (opt-out)
     @Published var renderOn = false  // ⌘C with nothing selected renders the clipboard (opt-in)
@@ -81,8 +80,7 @@ struct CardView: View {
     private var demo: some View {
         VStack(alignment: .leading, spacing: 14) {
             if model.worked {
-                // Only when the push really landed: with auto-copy off the clipboard still holds the original.
-                Text(model.pushed ? "✓ Formatted text copied to clipboard" : "✓ Works in any app.")
+                Text("✓ Formatted text copied to clipboard")
                     .font(.title2.bold()).foregroundStyle(.green)
             } else {
                 Text("Try it").font(.title2.bold())
