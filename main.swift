@@ -327,6 +327,7 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
         revealToken = loadToken; gotRendered = false; gotSize = false
         panel.alphaValue = 0
         panel.ignoresMouseEvents = true
+        log.notice("ghost-trace show token=\(self.loadToken) wasVisible=\(self.panel.isVisible)")
         panel.makeKeyAndOrderFront(nil)
         let token = loadToken
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [self] in reveal(token) }
@@ -355,6 +356,7 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
             if message.body as? Int == revealToken { gotRendered = true; revealIfMeasured() }
             return
         }
+        if dismissed { log.notice("ghost-trace late \(message.name) while closed - skipped") }
         // Width: the page's widest unwrappable block, clamped to 680..85% of the screen, re-centered on the panel's
         // center; then the page re-measures its height at the new width. Each summon starts again at 680.
         if message.name == "width" {
@@ -403,8 +405,29 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
     }
 
     /// A closed panel is a dismissed render: a push still in flight must not touch the clipboard.
-    func windowWillClose(_ notification: Notification) { pushOverCount = nil; dismissed = true }
-    func windowDidResignKey(_ notification: Notification) { if !panel.engaged { panel.close() } }
+    func windowWillClose(_ notification: Notification) {
+        pushOverCount = nil
+        dismissed = true
+        log.notice("ghost-trace close token=\(self.loadToken) engaged=\(self.panel.engaged) frame=\(NSStringFromRect(self.panel.frame))")
+        // Sticky ghost (2026-11-14): AppKit had the panel ordered out (isVisible false) while WindowServer still drew it,
+        // re-shown ~250 ms after the close with no focus change. Cause unknown (not reproduced); orderOut clears it.
+        // Check after the close settles, log what we find, and clear it.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [self] in
+            guard !panel.isVisible, Viewer.onScreen(panel.windowNumber) else { return }
+            log.error("ghost-trace GHOST token=\(self.loadToken) frame=\(NSStringFromRect(self.panel.frame)) - ordering out")
+            panel.orderOut(nil)
+        }
+    }
+    func windowDidResignKey(_ notification: Notification) {
+        log.notice("ghost-trace resignKey engaged=\(self.panel.engaged)")
+        if !panel.engaged { panel.close() }
+    }
+
+    /// WindowServer's view, not AppKit's: the two disagree for a ghost.
+    static func onScreen(_ number: Int) -> Bool {
+        let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+        return list.contains { $0[kCGWindowNumber as String] as? Int == number }
+    }
 
     // MARK: Buttons (visual, not shortcuts: discoverable without learning anything)
 
