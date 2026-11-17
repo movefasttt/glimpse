@@ -330,7 +330,8 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
         // Width: the page's widest unwrappable block, clamped to 680..85% of the screen, re-centered on the panel's
         // center; then the page re-measures its height at the new width. Each summon starts again at 680.
         if message.name == "width" {
-            guard let w = message.body as? Double, let vis = panel.screen?.visibleFrame else { return }
+            // A closed panel is done: a late measure from a still-loading page must not resize (and redraw) it.
+            guard panel.isVisible, let w = message.body as? Double, let vis = panel.screen?.visibleFrame else { return }
             var frame = panel.frame
             let width = min(max(CGFloat(w) * web.pageZoom, minWidth), vis.width * 0.85)  // the page measures in CSS px
             guard abs(width - frame.width) > 1 else { return }
@@ -340,7 +341,7 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
             web.evaluateJavaScript("postSize()")
             return
         }
-        guard let h = message.body as? Double, let screen = panel.screen else { return }
+        guard panel.isVisible, let h = message.body as? Double, let screen = panel.screen else { return }
         var frame = panel.frame
         let top = frame.maxY
         frame.size.height = min(max(CGFloat(h) * web.pageZoom, 80), screen.visibleFrame.height * 0.85)
