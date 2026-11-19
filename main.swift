@@ -286,6 +286,12 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
     private var loadToken = 0
     /// Set by a ⌘C⌘C render: the clipboard count to push over. Pushes only if nothing was copied since (the user's newer copy wins).
     private var pushOverCount: Int?
+    /// Set when the panel closes, cleared by show(): late measures from a dismissed render are dropped.
+    /// (Not isVisible: the panel is ordered in at alpha 0 while it measures, and must keep its own measures.)
+    private var dismissed = true
+    /// Reveal gate: the panel stays invisible until this load has both rendered and reported a height,
+    /// so the first frame the user sees is already final in size and position.
+    private var revealToken = 0, gotRendered = false, gotSize = false
 
     func show(_ text: String, push: Bool = false) {
         loadToken += 1
@@ -310,12 +316,33 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
         var frame = panel.frame
         frame.size.width = min(minWidth, vis.width * 0.85)
         frame.origin.x = min(max(mouse.x - frame.width / 2, vis.minX + 12), vis.maxX - frame.width - 12)
-        frame.origin.y = min(max(mouse.y - 24 - frame.height, vis.minY + 12), vis.maxY - frame.height)
+        // Top edge 24 pt below the cursor; the height handler keeps it there. Placing by the previous render's
+        // height pushed a short render away from the cursor near the bottom of the screen.
+        frame.origin.y = min(mouse.y - 24, vis.maxY) - frame.height
         panel.setFrame(frame, display: false)
 
-        if !panel.isVisible { panel.alphaValue = 0 }
+        // Measure first, then reveal: order in at alpha 0 (the page must lay out to measure), show on the
+        // first height after "rendered". Fallback for a page that never reports a height.
+        dismissed = false
+        revealToken = loadToken; gotRendered = false; gotSize = false
+        panel.alphaValue = 0
+        panel.ignoresMouseEvents = true
         panel.makeKeyAndOrderFront(nil)
+        let token = loadToken
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [self] in reveal(token) }
+    }
+
+    private func reveal(_ token: Int) {
+        guard token == revealToken, !dismissed, panel.ignoresMouseEvents else { return }
+        panel.ignoresMouseEvents = false
         NSAnimationContext.runAnimationGroup { $0.duration = 0.12; panel.animator().alphaValue = 1 }
+    }
+
+    /// Both halves in: settle one beat (a width change re-measures the height) then reveal.
+    private func revealIfMeasured() {
+        guard gotRendered, gotSize else { return }
+        let token = revealToken
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [self] in reveal(token) }
     }
 
     // Fit the panel to rendered content: width from the page's `width` message, height keeping the top edge anchored.
@@ -325,13 +352,14 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
                 pushFormatted(over: count)
             }
             pushOverCount = nil
+            if message.body as? Int == revealToken { gotRendered = true; revealIfMeasured() }
             return
         }
         // Width: the page's widest unwrappable block, clamped to 680..85% of the screen, re-centered on the panel's
         // center; then the page re-measures its height at the new width. Each summon starts again at 680.
         if message.name == "width" {
             // A closed panel is done: a late measure from a still-loading page must not resize (and redraw) it.
-            guard panel.isVisible, let w = message.body as? Double, let vis = panel.screen?.visibleFrame else { return }
+            guard !dismissed, let w = message.body as? Double, let vis = panel.screen?.visibleFrame else { return }
             var frame = panel.frame
             let width = min(max(CGFloat(w) * web.pageZoom, minWidth), vis.width * 0.85)  // the page measures in CSS px
             guard abs(width - frame.width) > 1 else { return }
@@ -341,12 +369,13 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
             web.evaluateJavaScript("postSize()")
             return
         }
-        guard panel.isVisible, let h = message.body as? Double, let screen = panel.screen else { return }
+        guard !dismissed, let h = message.body as? Double, let screen = panel.screen else { return }
         var frame = panel.frame
         let top = frame.maxY
         frame.size.height = min(max(CGFloat(h) * web.pageZoom, 80), screen.visibleFrame.height * 0.85)
         frame.origin.y = max(top - frame.height, screen.visibleFrame.minY + 12)
         panel.setFrame(frame, display: true, animate: false)
+        gotSize = true; revealIfMeasured()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { Dogfood.snapshot(self.web) }
     }
 
@@ -374,7 +403,7 @@ final class Viewer: NSObject, NSWindowDelegate, WKNavigationDelegate, WKScriptMe
     }
 
     /// A closed panel is a dismissed render: a push still in flight must not touch the clipboard.
-    func windowWillClose(_ notification: Notification) { pushOverCount = nil }
+    func windowWillClose(_ notification: Notification) { pushOverCount = nil; dismissed = true }
     func windowDidResignKey(_ notification: Notification) { if !panel.engaged { panel.close() } }
 
     // MARK: Buttons (visual, not shortcuts: discoverable without learning anything)
