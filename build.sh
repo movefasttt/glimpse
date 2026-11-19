@@ -7,8 +7,8 @@ cd "$(dirname "$0")"
 export DEVELOPER_DIR=/Library/Developer/CommandLineTools
 
 APP=build/Glimpse.app
-VERSION=1.0   # user-facing; one source of truth for the plist
-BUILD=6       # bump for every release Apple notarizes
+VERSION=1.1   # user-facing; one source of truth for the plist
+BUILD=7       # bump for every release Apple notarizes
 rm -rf build
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 

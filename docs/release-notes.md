@@ -1,5 +1,12 @@
 # Release notes
 
+## 1.1
+- The panel appears only once it is final: no size jump, and it always opens next to the cursor.
+- Every ⌘C⌘C push says so: a green check on the copy button, and a short hint on the first pushes.
+- The first-run card shows the result, not a promise.
+
+- 2026-11-19: v1.1 build 7. The panel now measures itself before it appears (no size jump, and it opens next to the cursor every time); every ⌘C⌘C push says what happened (green check on the copy button, hint on the first pushes); the first-run headline is the result. Signed, notarized and stapled; asset `Glimpse.dmg` (4191229 bytes, sha256 `b25ccd69…a76c7e5`).
+
 ## 1.0 (first release)
 - Select text anywhere, press ⌘C twice: a formatted panel opens at the cursor.
 - Copy formatted Markdown or an image of the panel; toggle back to the original.
