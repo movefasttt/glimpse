@@ -5,7 +5,7 @@
 - Every ⌘C⌘C push says so: a green check on the copy button, and a short hint on the first pushes.
 - The first-run card shows the result, not a promise.
 
-- 2026-11-19: v1.1 build 7. The panel now measures itself before it appears (no size jump, and it opens next to the cursor every time); every ⌘C⌘C push says what happened (green check on the copy button, hint on the first pushes); the first-run headline is the result. Signed, notarized and stapled; asset `Glimpse.dmg` (4191229 bytes, sha256 `b25ccd69…a76c7e5`).
+- 2026-11-19: v1.1 build 7. The panel now measures itself before it appears (no size jump, and it opens next to the cursor every time); every ⌘C⌘C push says what happened (green check on the copy button, hint on the first pushes); the first-run headline is the result. Signed, notarized and stapled; asset `Glimpse.dmg` (4191228 bytes, sha256 `b2ba17e3…841a780`). Rebuilt and re-uploaded 2026-11-20 after the commit-author rewrite (same source, new signature).
 
 ## 1.0 (first release)
 - Select text anywhere, press ⌘C twice: a formatted panel opens at the cursor.
